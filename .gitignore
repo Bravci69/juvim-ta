@@ -1,0 +1,9 @@
+# Original uncompressed backup
+Photos-1-001/
+Photos-1-001.zip
+
+# Logs and scratch
+*.log
+scratch/
+.system_generated/
+__pycache__/

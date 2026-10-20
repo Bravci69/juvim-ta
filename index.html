@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Všetko najlepšie k výročiu Jasi 💜 | Záhrada spomienok</title>
+  
+  <!-- SEO & Social Meta Tags -->
+  <meta name="description" content="Kúzelná záhrada fialových kvetov plná našich najkrajších spomienok a fotografií k výročiu pre Jasi.">
+  <meta name="theme-color" content="#120924">
+  
+  <!-- Google Fonts: Great Vibes (Romance/Calligraphy), Playfair Display (Serif), Outfit (Clean Modern) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Great+Vibes&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%239d4edd'/><circle cx='50' cy='50' r='18' fill='%23ffd166'/></svg>">
+</head>
+<body>
+
+  <!-- Floating Falling Petals and Stars Canvas -->
+  <canvas id="petals-canvas"></canvas>
+
+  <!-- ==========================================================================
+       INTRO SCREEN: "všetko najlepšie k výročiu jasi"
+       Appears first, holds for a moment, and gently fades away into the flowers
+       ========================================================================== -->
+  <div id="intro-screen" class="intro-screen">
+    <div class="intro-stars"></div>
+    <div class="intro-content">
+      <div class="intro-heart-icon">💜</div>
+      <h1 class="intro-title" id="intro-main-title">všetko najlepšie k výročiu jasi</h1>
+      <p class="intro-subtitle">Naša láska rozkvitnutá v záhrade nezabudnuteľných spomienok</p>
+      
+      <div class="intro-counter-badge">
+        <span>🌸</span>
+        <span id="intro-count-text">824 kvetov pre 824 krásnych chvíľ</span>
+      </div>
+
+      <div>
+        <button id="skip-intro-btn" class="intro-skip-btn">
+          Vstúpiť do záhrady ✨
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MAIN APP HEADER & NAVIGATION
+       ========================================================================== -->
+  <header class="app-header">
+    <div class="header-brand" id="brand-home-btn" title="Návrat na začiatok">
+      <svg class="header-logo-flower" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="38" fill="#7b2cbf" opacity="0.6"/>
+        <circle cx="35" cy="40" r="18" fill="#c77dff"/>
+        <circle cx="65" cy="40" r="18" fill="#c77dff"/>
+        <circle cx="35" cy="62" r="18" fill="#9d4edd"/>
+        <circle cx="65" cy="62" r="18" fill="#9d4edd"/>
+        <circle cx="50" cy="50" r="14" fill="#ffd166"/>
+      </svg>
+      <div class="header-title-box">
+        <span class="header-title">Pre Jasi 💜</span>
+        <span class="header-subtitle">Záhrada našich chvíľ</span>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <!-- Ambient Music Toggle (Web Audio API) -->
+      <button id="music-btn" class="control-btn" title="Zapnúť / vypnúť romantickú hudbu">
+        <div class="sound-waves paused" id="sound-waves">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <span class="btn-label" id="music-btn-label">Hudba</span>
+      </button>
+
+      <!-- Replay Intro Button -->
+      <button id="replay-intro-btn" class="control-btn" title="Znova zobraziť prianie k výročiu">
+        <span>✨</span>
+        <span class="btn-label">Prianie</span>
+      </button>
+
+      <!-- Random Memory Button -->
+      <button id="random-memory-btn" class="control-btn" title="Vybrať náhodný kvet zo záhrady">
+        <span>🎲</span>
+        <span class="btn-label">Náhodná</span>
+      </button>
+
+      <!-- Slideshow Button -->
+      <button id="slideshow-btn" class="control-btn" title="Spustiť romantické premietanie">
+        <span>🎬</span>
+        <span class="btn-label" id="slideshow-btn-label">Príbeh</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       FILTER BAR & TIMELINE TABS
+       ========================================================================== -->
+  <div class="filter-bar-container">
+    <div class="filter-bar-top">
+      <div class="garden-stats">
+        <div class="stat-pill">
+          <span>💜</span>
+          <span id="rendered-count-text"><strong>824</strong> spomienok</span>
+        </div>
+        <div class="stat-pill" id="time-span-pill">
+          <span>📅</span>
+          <span>September 2025 – Október 2026</span>
+        </div>
+      </div>
+
+      <!-- Search by date / keyword -->
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" class="search-input" placeholder="Hľadať dátum, napr. apríl, 24.12...">
+      </div>
+    </div>
+
+    <!-- Scrollable Month Tabs -->
+    <div class="month-tabs-scroll" id="month-tabs-scroll">
+      <!-- Populated dynamically via JS -->
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       GARDEN CONTAINER (WHERE THE FLOWERS BLOOM)
+       ========================================================================== -->
+  <main class="garden-main" id="garden-container">
+    <!-- Populated dynamically with 824 flowers via app.js -->
+  </main>
+
+  <!-- ==========================================================================
+       PHOTO LIGHTBOX MODAL
+       Appears when any flower is clicked
+       ========================================================================== -->
+  <div id="lightbox-modal" class="lightbox-modal" role="dialog" aria-modal="true" aria-label="Detail fotografie">
+    <div class="lightbox-container" id="lightbox-container">
+      
+      <!-- Modal Header -->
+      <div class="lightbox-header">
+        <div class="lightbox-info">
+          <div class="lightbox-date" id="lightbox-date">
+            <span class="lightbox-date-icon">📅</span>
+            <span id="lightbox-date-text">20. decembra 2025</span>
+          </div>
+          <div class="lightbox-meta">
+            <span id="lightbox-day-text">Sobota</span>
+            <span>•</span>
+            <span id="lightbox-counter-text">Spomienka 1 z 824</span>
+          </div>
+        </div>
+
+        <div class="lightbox-actions">
+          <button id="lightbox-zoom-btn" class="lightbox-btn" title="Priblížiť fotku">🔍</button>
+          <a id="lightbox-download-btn" class="lightbox-btn" title="Stiahnuť originál" download>⬇️</a>
+          <button id="lightbox-close-btn" class="lightbox-btn" title="Zatvoriť (Esc)">✕</button>
+        </div>
+      </div>
+
+      <!-- Modal Media -->
+      <div class="lightbox-media-wrapper" id="lightbox-media-wrapper">
+        <div class="lightbox-loader" id="lightbox-loader"></div>
+        <img id="lightbox-img" class="lightbox-image" src="" alt="Spomienka" style="display: none;">
+        <video id="lightbox-video" class="lightbox-video" controls playsinline style="display: none;"></video>
+        
+        <!-- Navigation Buttons -->
+        <button id="lightbox-prev-btn" class="lightbox-nav-btn lightbox-prev" title="Predchádzajúca spomienka (šípka vľavo)">‹</button>
+        <button id="lightbox-next-btn" class="lightbox-nav-btn lightbox-next" title="Nasledujúca spomienka (šípka vpravo)">›</button>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="lightbox-footer">
+        <div class="lightbox-counter" id="lightbox-bottom-info">
+          🌸 Kliknutím na šípky alebo posunom klávesnice prezeraj ďalšie
+        </div>
+        <div class="lightbox-keyboard-hint">
+          Tip: Použi šípky ◀ / ▶ a Esc
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       ROMANTIC FOOTER
+       ========================================================================== -->
+  <footer class="app-footer">
+    <div class="footer-quote">„Každý kvet v tejto záhrade je úsmev, ktorý sme spolu zdieľali.“</div>
+    <p>Všetko najlepšie k výročiu, Jasi 💜 | 2025 – 2026</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="flowers.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
