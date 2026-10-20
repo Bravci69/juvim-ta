@@ -1,7 +1,7 @@
 /**
  * Anniversary Web Application for Jasi
  * "všetko najlepšie k výročiu jasi"
- * Minimalist, elegant, authentic presentation of 824 memories
+ * Living Flower Garden Meadow - Continuous, Organic & Seamless
  */
 
 (function () {
@@ -10,7 +10,6 @@
   // State
   let memories = [];
   let filteredMemories = [];
-  let activeMonthKey = 'all';
   let searchQuery = '';
   let currentLightboxIndex = -1;
   let isZoomed = false;
@@ -18,13 +17,11 @@
   // DOM Elements
   const introScreen = document.getElementById('intro-screen');
   const gardenContainer = document.getElementById('garden-container');
-  const monthTabsScroll = document.getElementById('month-tabs-scroll');
   const searchInput = document.getElementById('search-input');
   const renderedCountText = document.getElementById('rendered-count-text');
   
   // Lightbox Elements
   const lightboxModal = document.getElementById('lightbox-modal');
-  const lightboxContainer = document.getElementById('lightbox-container');
   const lightboxCloseBtn = document.getElementById('lightbox-close-btn');
   const lightboxPrevBtn = document.getElementById('lightbox-prev-btn');
   const lightboxNextBtn = document.getElementById('lightbox-next-btn');
@@ -59,7 +56,6 @@
       }
     }
 
-    setupMonthTabs();
     applyFilters();
     setupEventListeners();
   }
@@ -68,7 +64,6 @@
   // 2. INTRO SEQUENCE: "všetko najlepšie k výročiu jasi"
   // ==========================================================================
   function initIntro() {
-    // Automatically fades after 3.8s
     const introTimer = setTimeout(() => {
       dismissIntro();
     }, 3800);
@@ -87,141 +82,92 @@
   }
 
   // ==========================================================================
-  // 3. MONTH TABS & TIMELINE
-  // ==========================================================================
-  function setupMonthTabs() {
-    const monthsMap = new Map();
-    memories.forEach(m => {
-      if (!monthsMap.has(m.month_year_key)) {
-        monthsMap.set(m.month_year_key, {
-          key: m.month_year_key,
-          label: m.month_year_label,
-          count: 0
-        });
-      }
-      monthsMap.get(m.month_year_key).count++;
-    });
-
-    let html = `<button class="month-tab active" data-month="all">Všetky (${memories.length})</button>`;
-    monthsMap.forEach(m => {
-      html += `<button class="month-tab" data-month="${m.key}">${m.label}</button>`;
-    });
-
-    monthTabsScroll.innerHTML = html;
-
-    monthTabsScroll.querySelectorAll('.month-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        monthTabsScroll.querySelectorAll('.month-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        activeMonthKey = tab.getAttribute('data-month');
-        applyFilters();
-        tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      });
-    });
-  }
-
-  // ==========================================================================
-  // 4. FILTERING & RENDERING FLOWERS
+  // 3. FILTERING & RENDERING THE LIVING GARDEN MEADOW
   // ==========================================================================
   function applyFilters() {
     const q = searchQuery.toLowerCase().trim();
 
-    filteredMemories = memories.filter(m => {
-      const matchesMonth = (activeMonthKey === 'all') || (m.month_year_key === activeMonthKey);
-      if (!matchesMonth) return false;
-
-      if (!q) return true;
-      return (
+    if (!q) {
+      filteredMemories = memories;
+    } else {
+      filteredMemories = memories.filter(m => (
         m.formatted_date.toLowerCase().includes(q) ||
         m.short_date.toLowerCase().includes(q) ||
         m.day_name.toLowerCase().includes(q) ||
         m.month_year_label.toLowerCase().includes(q) ||
         String(m.memory_number).includes(q)
-      );
-    });
+      ));
+    }
 
     renderGarden();
   }
 
   function renderGarden() {
     if (renderedCountText) {
-      renderedCountText.textContent = `${filteredMemories.length} spomienok`;
+      const count = filteredMemories.length;
+      const word = count === 1 ? 'kvet' : (count < 5 ? 'kvety' : 'kvetov');
+      renderedCountText.textContent = `${count} ${word}`;
     }
 
     if (filteredMemories.length === 0) {
       gardenContainer.innerHTML = `
         <div class="no-results">
-          <p>Nenašli sa žiadne fotografie pre zadané vyhľadávanie.</p>
+          <p>V záhrade sa nenašli žiadne kvety pre zadané hľadanie.</p>
         </div>
       `;
       return;
     }
 
-    // Group by month
-    const groups = new Map();
-    filteredMemories.forEach(m => {
-      if (!groups.has(m.month_year_key)) {
-        groups.set(m.month_year_key, {
-          label: m.month_year_label,
-          items: []
-        });
-      }
-      groups.get(m.month_year_key).items.push(m);
-    });
+    let html = '<div class="garden-meadow" id="garden-meadow">';
 
-    let mainHtml = '';
+    filteredMemories.forEach((item, index) => {
+      const flowerRenderer = window.FlowerSVGs[item.flower_type] || window.FlowerSVGs.violet;
+      const svgContent = flowerRenderer(item.id);
+      
+      // Organic natural garden properties:
+      // Height variation based on flower species + subtle pseudo-random jitter
+      const hash = (item.id * 37 + index * 19) % 100;
+      let baseHeight = 130;
+      if (item.flower_type === 'lavender') baseHeight = 146;
+      else if (item.flower_type === 'violet' || item.flower_type === 'crocus') baseHeight = 118;
+      else if (item.flower_type === 'rose' || item.flower_type === 'peony') baseHeight = 136;
 
-    groups.forEach((group, key) => {
-      mainHtml += `
-        <section class="month-section" id="section-${key}">
-          <div class="month-section-header">
-            <h2 class="month-section-title">${group.label}</h2>
-            <span class="month-section-count">${group.items.length}</span>
+      const itemHeight = baseHeight + (hash % 20) - 10;
+      const yOffset = ((hash % 16) - 8);
+      const rotOffset = (((hash % 14) - 7) * 0.4).toFixed(1);
+      const swayDuration = (4.8 + (hash % 35) * 0.1).toFixed(1);
+      const swayDelay = (-((hash % 60) * 0.1)).toFixed(1);
+
+      const timeDisplay = item.has_exact_time 
+        ? `<div class="tooltip-day">${item.day_name}, ${item.time}</div>` 
+        : `<div class="tooltip-day">${item.day_name}</div>`;
+
+      html += `
+        <div class="flower-item" 
+             id="flower-${item.id}"
+             data-id="${item.id}"
+             style="height: ${itemHeight}px; --y-offset: ${yOffset}px; --rot-offset: ${rotOffset}deg; --sway-dur: ${swayDuration}s; --sway-delay: ${swayDelay}s;"
+             role="button"
+             tabindex="0"
+             aria-label="${item.formatted_date}">
+          
+          <div class="flower-soil-base"></div>
+
+          <div class="flower-svg-wrapper">
+            ${svgContent}
           </div>
-          <div class="flowers-grid">
-      `;
 
-      group.items.forEach(item => {
-        const flowerRenderer = window.FlowerSVGs[item.flower_type] || window.FlowerSVGs.violet;
-        const svgContent = flowerRenderer(item.id);
-        
-        // Random slight height variation for natural meadow look (110px to 132px)
-        const itemHeight = 110 + ((item.id * 17) % 24);
-        const timeDisplay = item.has_exact_time 
-          ? `<div class="tooltip-day">${item.day_name}, ${item.time}</div>` 
-          : `<div class="tooltip-day">${item.day_name}</div>`;
-
-        mainHtml += `
-          <div class="flower-item" 
-               id="flower-${item.id}"
-               data-id="${item.id}"
-               style="height: ${itemHeight}px;"
-               role="button"
-               tabindex="0"
-               aria-label="${item.formatted_date}">
-            
-            <div class="flower-glow-spot"></div>
-
-            <div class="flower-svg-wrapper">
-              ${svgContent}
-            </div>
-
-            <div class="flower-tooltip">
-              <div class="tooltip-date">${item.short_date}</div>
-              ${timeDisplay}
-            </div>
-
+          <div class="flower-tooltip">
+            <div class="tooltip-date">${item.short_date}</div>
+            ${timeDisplay}
           </div>
-        `;
-      });
 
-      mainHtml += `
-          </div>
-        </section>
+        </div>
       `;
     });
 
-    gardenContainer.innerHTML = mainHtml;
+    html += '</div>';
+    gardenContainer.innerHTML = html;
 
     // Attach click events
     gardenContainer.querySelectorAll('.flower-item').forEach(el => {
@@ -240,7 +186,7 @@
   }
 
   // ==========================================================================
-  // 5. LIGHTBOX MODAL (PHOTO VIEWER)
+  // 4. LIGHTBOX MODAL (PHOTO VIEWER)
   // ==========================================================================
   function openLightboxById(id) {
     const idx = filteredMemories.findIndex(m => m.id === id);
@@ -332,7 +278,7 @@
   }
 
   // ==========================================================================
-  // 6. RANDOM MEMORY
+  // 5. RANDOM MEMORY
   // ==========================================================================
   function pickRandomMemory() {
     if (filteredMemories.length === 0) return;
@@ -343,7 +289,7 @@
     if (flowerEl) {
       flowerEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       flowerEl.style.transition = 'all 0.4s ease';
-      flowerEl.style.filter = 'drop-shadow(0 0 20px rgba(203, 186, 217, 0.8))';
+      flowerEl.style.filter = 'drop-shadow(0 0 25px rgba(203, 186, 217, 0.9))';
       setTimeout(() => {
         flowerEl.style.filter = '';
         openLightboxByIndex(randIdx);
@@ -354,7 +300,7 @@
   }
 
   // ==========================================================================
-  // 7. PETALS & PARTICLES CANVAS (Gentle subtle drift)
+  // 6. PETALS & PARTICLES CANVAS (Gentle subtle drift)
   // ==========================================================================
   function initPetalsCanvas() {
     const canvas = document.getElementById('petals-canvas');
@@ -428,7 +374,7 @@
   }
 
   // ==========================================================================
-  // 8. EVENT LISTENERS
+  // 7. EVENT LISTENERS
   // ==========================================================================
   function setupEventListeners() {
     let searchTimeout;
