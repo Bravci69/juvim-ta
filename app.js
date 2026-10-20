@@ -1,7 +1,7 @@
 /**
  * Anniversary Web Application for Jasi
  * "všetko najlepšie k výročiu jasi"
- * Handles intro sequence, interactive purple flower garden, lightbox modal, canvas particles, and ambient music
+ * Minimalist, elegant, authentic presentation of 824 memories
  */
 
 (function () {
@@ -14,22 +14,15 @@
   let searchQuery = '';
   let currentLightboxIndex = -1;
   let isZoomed = false;
-  let slideshowInterval = null;
-  let isAudioPlaying = false;
-  let audioContext = null;
-  let musicTimeout = null;
 
   // DOM Elements
   const introScreen = document.getElementById('intro-screen');
-  const skipIntroBtn = document.getElementById('skip-intro-btn');
-  const replayIntroBtn = document.getElementById('replay-intro-btn');
   const gardenContainer = document.getElementById('garden-container');
   const monthTabsScroll = document.getElementById('month-tabs-scroll');
   const searchInput = document.getElementById('search-input');
   const renderedCountText = document.getElementById('rendered-count-text');
-  const introCountText = document.getElementById('intro-count-text');
   
-  // Lightbox DOM Elements
+  // Lightbox Elements
   const lightboxModal = document.getElementById('lightbox-modal');
   const lightboxContainer = document.getElementById('lightbox-container');
   const lightboxCloseBtn = document.getElementById('lightbox-close-btn');
@@ -44,11 +37,7 @@
   const lightboxDownloadBtn = document.getElementById('lightbox-download-btn');
   const lightboxZoomBtn = document.getElementById('lightbox-zoom-btn');
   const randomMemoryBtn = document.getElementById('random-memory-btn');
-  const slideshowBtn = document.getElementById('slideshow-btn');
-  const slideshowBtnLabel = document.getElementById('slideshow-btn-label');
   const brandHomeBtn = document.getElementById('brand-home-btn');
-  const musicBtn = document.getElementById('music-btn');
-  const soundWaves = document.getElementById('sound-waves');
 
   // ==========================================================================
   // 1. INITIALIZATION & DATA LOADING
@@ -57,7 +46,6 @@
     initPetalsCanvas();
     initIntro();
 
-    // Load data from window.PHOTOS_DATA or fetch fallback
     if (window.PHOTOS_DATA && Array.isArray(window.PHOTOS_DATA)) {
       memories = window.PHOTOS_DATA;
     } else {
@@ -71,10 +59,6 @@
       }
     }
 
-    if (introCountText) {
-      introCountText.textContent = `${memories.length} kvetov pre ${memories.length} krásnych chvíľ`;
-    }
-
     setupMonthTabs();
     applyFilters();
     setupEventListeners();
@@ -84,23 +68,14 @@
   // 2. INTRO SEQUENCE: "všetko najlepšie k výročiu jasi"
   // ==========================================================================
   function initIntro() {
-    // Automatically fade out after 3.8s
+    // Automatically fades after 3.8s
     const introTimer = setTimeout(() => {
       dismissIntro();
     }, 3800);
 
-    if (skipIntroBtn) {
-      skipIntroBtn.addEventListener('click', () => {
-        clearTimeout(introTimer);
-        dismissIntro();
-      });
-    }
-
-    introScreen.addEventListener('click', (e) => {
-      if (e.target.tagName !== 'BUTTON') {
-        clearTimeout(introTimer);
-        dismissIntro();
-      }
+    introScreen.addEventListener('click', () => {
+      clearTimeout(introTimer);
+      dismissIntro();
     });
   }
 
@@ -111,21 +86,10 @@
     }, 1800);
   }
 
-  function replayIntro() {
-    introScreen.style.display = 'flex';
-    // Force reflow
-    void introScreen.offsetWidth;
-    introScreen.classList.remove('fade-out');
-    setTimeout(() => {
-      dismissIntro();
-    }, 4500);
-  }
-
   // ==========================================================================
   // 3. MONTH TABS & TIMELINE
   // ==========================================================================
   function setupMonthTabs() {
-    // Extract unique months in chronological order
     const monthsMap = new Map();
     memories.forEach(m => {
       if (!monthsMap.has(m.month_year_key)) {
@@ -138,9 +102,9 @@
       monthsMap.get(m.month_year_key).count++;
     });
 
-    let html = `<button class="month-tab active" data-month="all">🌸 Všetky spomienky (${memories.length})</button>`;
+    let html = `<button class="month-tab active" data-month="all">Všetky (${memories.length})</button>`;
     monthsMap.forEach(m => {
-      html += `<button class="month-tab" data-month="${m.key}">${m.label} (${m.count})</button>`;
+      html += `<button class="month-tab" data-month="${m.key}">${m.label}</button>`;
     });
 
     monthTabsScroll.innerHTML = html;
@@ -151,7 +115,6 @@
         tab.classList.add('active');
         activeMonthKey = tab.getAttribute('data-month');
         applyFilters();
-        // Smooth scroll tab into view
         tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
       });
     });
@@ -182,14 +145,13 @@
 
   function renderGarden() {
     if (renderedCountText) {
-      renderedCountText.innerHTML = `<strong>${filteredMemories.length}</strong> kvetín`;
+      renderedCountText.textContent = `${filteredMemories.length} spomienok`;
     }
 
     if (filteredMemories.length === 0) {
       gardenContainer.innerHTML = `
         <div class="no-results">
-          <p style="font-size: 2rem; margin-bottom: 12px;">🌿</p>
-          <p>Nenašli sa žiadne kvety pre zadané hľadanie.</p>
+          <p>Nenašli sa žiadne fotografie pre zadané vyhľadávanie.</p>
         </div>
       `;
       return;
@@ -213,11 +175,8 @@
       mainHtml += `
         <section class="month-section" id="section-${key}">
           <div class="month-section-header">
-            <h2 class="month-section-title">
-              <span>🌸</span>
-              <span>${group.label}</span>
-            </h2>
-            <span class="month-section-count">${group.items.length} ${group.items.length === 1 ? 'kvet' : (group.items.length < 5 ? 'kvety' : 'kvetov')}</span>
+            <h2 class="month-section-title">${group.label}</h2>
+            <span class="month-section-count">${group.items.length}</span>
           </div>
           <div class="flowers-grid">
       `;
@@ -226,9 +185,11 @@
         const flowerRenderer = window.FlowerSVGs[item.flower_type] || window.FlowerSVGs.violet;
         const svgContent = flowerRenderer(item.id);
         
-        // Random slight height variation for meadow look (110px to 132px)
+        // Random slight height variation for natural meadow look (110px to 132px)
         const itemHeight = 110 + ((item.id * 17) % 24);
-        const timeDisplay = item.has_exact_time ? `<div class="tooltip-day">${item.day_name} · ⏰ ${item.time}</div>` : `<div class="tooltip-day">${item.day_name}</div>`;
+        const timeDisplay = item.has_exact_time 
+          ? `<div class="tooltip-day">${item.day_name}, ${item.time}</div>` 
+          : `<div class="tooltip-day">${item.day_name}</div>`;
 
         mainHtml += `
           <div class="flower-item" 
@@ -237,7 +198,7 @@
                style="height: ${itemHeight}px;"
                role="button"
                tabindex="0"
-               aria-label="Fotka zo dňa ${item.formatted_date}">
+               aria-label="${item.formatted_date}">
             
             <div class="flower-glow-spot"></div>
 
@@ -246,12 +207,8 @@
             </div>
 
             <div class="flower-tooltip">
-              <div class="tooltip-date">
-                <span>📅</span>
-                <span>${item.short_date}</span>
-              </div>
+              <div class="tooltip-date">${item.short_date}</div>
               ${timeDisplay}
-              <div class="tooltip-hint">✨ Klikni pre fotku 💜</div>
             </div>
 
           </div>
@@ -302,8 +259,8 @@
 
     // Update Text Details
     lightboxDateText.textContent = item.formatted_date;
-    lightboxDayText.textContent = item.day_name + (item.has_exact_time ? ` · ⏰ ${item.time}` : '');
-    lightboxCounterText.textContent = `Spomienka ${item.memory_number} z ${memories.length}`;
+    lightboxDayText.textContent = item.day_name + (item.has_exact_time ? `, ${item.time}` : '');
+    lightboxCounterText.textContent = `${item.memory_number} / ${memories.length}`;
     lightboxDownloadBtn.href = item.path;
     lightboxDownloadBtn.download = item.filename;
 
@@ -335,7 +292,7 @@
       tempImg.src = item.path;
     }
 
-    // Preload next image
+    // Preload adjacent images
     if (index + 1 < filteredMemories.length && !filteredMemories[index + 1].is_video) {
       const nextPreload = new Image();
       nextPreload.src = filteredMemories[index + 1].path;
@@ -349,7 +306,6 @@
     lightboxModal.classList.remove('active');
     lightboxVideo.pause();
     document.body.style.overflow = '';
-    stopSlideshow();
   }
 
   function showNextMemory() {
@@ -376,152 +332,29 @@
   }
 
   // ==========================================================================
-  // 6. RANDOM MEMORY & SLIDESHOW
+  // 6. RANDOM MEMORY
   // ==========================================================================
   function pickRandomMemory() {
     if (filteredMemories.length === 0) return;
     const randIdx = Math.floor(Math.random() * filteredMemories.length);
     const item = filteredMemories[randIdx];
 
-    // Highlight and scroll to flower
     const flowerEl = document.getElementById(`flower-${item.id}`);
     if (flowerEl) {
       flowerEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      flowerEl.style.transition = 'all 0.5s ease';
-      flowerEl.style.filter = 'drop-shadow(0 0 35px #ffd166)';
+      flowerEl.style.transition = 'all 0.4s ease';
+      flowerEl.style.filter = 'drop-shadow(0 0 20px rgba(203, 186, 217, 0.8))';
       setTimeout(() => {
         flowerEl.style.filter = '';
         openLightboxByIndex(randIdx);
-      }, 700);
+      }, 500);
     } else {
       openLightboxByIndex(randIdx);
     }
   }
 
-  function toggleSlideshow() {
-    if (slideshowInterval) {
-      stopSlideshow();
-    } else {
-      startSlideshow();
-    }
-  }
-
-  function startSlideshow() {
-    if (filteredMemories.length === 0) return;
-    if (!lightboxModal.classList.contains('active')) {
-      openLightboxByIndex(0);
-    }
-    slideshowBtn.classList.add('active');
-    slideshowBtnLabel.textContent = 'Pauza';
-    slideshowInterval = setInterval(() => {
-      showNextMemory();
-    }, 4200);
-  }
-
-  function stopSlideshow() {
-    if (slideshowInterval) {
-      clearInterval(slideshowInterval);
-      slideshowInterval = null;
-      slideshowBtn.classList.remove('active');
-      slideshowBtnLabel.textContent = 'Príbeh';
-    }
-  }
-
   // ==========================================================================
-  // 7. ROMANTIC AMBIENT AUDIO SYNTH (Web Audio API)
-  // Pure Web Audio music box / celesta pentatonic chords
-  // ==========================================================================
-  function toggleMusic() {
-    if (isAudioPlaying) {
-      stopMusic();
-    } else {
-      startMusic();
-    }
-  }
-
-  function startMusic() {
-    try {
-      if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioContext.state === 'suspended') {
-        audioContext.resume();
-      }
-
-      isAudioPlaying = true;
-      musicBtn.classList.add('active');
-      soundWaves.classList.remove('paused');
-
-      playChordProgression();
-    } catch (e) {
-      console.warn('Audio could not be initialized:', e);
-    }
-  }
-
-  function stopMusic() {
-    isAudioPlaying = false;
-    musicBtn.classList.remove('active');
-    soundWaves.classList.add('paused');
-    if (musicTimeout) {
-      clearTimeout(musicTimeout);
-      musicTimeout = null;
-    }
-  }
-
-  function playTone(freq, time, duration, gainVal = 0.15) {
-    if (!audioContext) return;
-    const osc = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-
-    // Gentle sine/triangle chime
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, time);
-
-    gain.gain.setValueAtTime(0.0001, time);
-    gain.gain.exponentialRampToValueAtTime(gainVal, time + 0.08);
-    gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
-
-    osc.connect(gain);
-    gain.connect(audioContext.destination);
-
-    osc.start(time);
-    osc.stop(time + duration);
-  }
-
-  // Romantic Eb Major / C Minor dreamy pentatonic arpeggio
-  const CHORD_PROGRESSIONS = [
-    // Eb Major (Eb, G, Bb, Eb, G)
-    [311.13, 392.00, 466.16, 622.25, 783.99],
-    // C Minor (C, Eb, G, C, Eb)
-    [261.63, 311.13, 392.00, 523.25, 622.25],
-    // Ab Major (Ab, C, Eb, Ab, C)
-    [207.65, 261.63, 311.13, 415.30, 523.25],
-    // Bb Major (Bb, D, F, Bb, D)
-    [233.08, 293.66, 349.23, 466.16, 587.33]
-  ];
-
-  let chordIndex = 0;
-
-  function playChordProgression() {
-    if (!isAudioPlaying || !audioContext) return;
-
-    const now = audioContext.currentTime;
-    const chord = CHORD_PROGRESSIONS[chordIndex % CHORD_PROGRESSIONS.length];
-    chordIndex++;
-
-    // Play gentle arpeggiated chime
-    chord.forEach((noteFreq, i) => {
-      playTone(noteFreq, now + (i * 0.38), 2.2, 0.08 - (i * 0.01));
-    });
-
-    // Soft bass foundation
-    playTone(chord[0] / 2, now, 3.5, 0.12);
-
-    musicTimeout = setTimeout(playChordProgression, 3200);
-  }
-
-  // ==========================================================================
-  // 8. PETALS & PARTICLES CANVAS (Floating in wind)
+  // 7. PETALS & PARTICLES CANVAS (Gentle subtle drift)
   // ==========================================================================
   function initPetalsCanvas() {
     const canvas = document.getElementById('petals-canvas');
@@ -538,59 +371,31 @@
 
     const petals = [];
     const petalColors = [
-      'rgba(224, 170, 255, 0.65)',
-      'rgba(199, 125, 255, 0.55)',
-      'rgba(157, 78, 221, 0.45)',
-      'rgba(247, 37, 133, 0.4)',
-      'rgba(255, 209, 102, 0.35)'
+      'rgba(203, 186, 217, 0.45)',
+      'rgba(180, 160, 200, 0.35)',
+      'rgba(141, 119, 160, 0.3)',
+      'rgba(225, 215, 235, 0.35)'
     ];
 
-    // Create 45 petals
-    for (let i = 0; i < 45; i++) {
+    for (let i = 0; i < 35; i++) {
       petals.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        r: 4 + Math.random() * 7,
+        r: 3 + Math.random() * 5,
         color: petalColors[Math.floor(Math.random() * petalColors.length)],
-        vx: -0.8 + Math.random() * 1.6,
-        vy: 0.6 + Math.random() * 1.2,
+        vx: -0.5 + Math.random() * 1.0,
+        vy: 0.4 + Math.random() * 0.8,
         rot: Math.random() * Math.PI * 2,
-        rotSpeed: -0.02 + Math.random() * 0.04,
-        swayAmp: 0.8 + Math.random() * 1.8,
-        swayFreq: 0.01 + Math.random() * 0.02,
+        rotSpeed: -0.015 + Math.random() * 0.03,
+        swayAmp: 0.5 + Math.random() * 1.2,
+        swayFreq: 0.008 + Math.random() * 0.015,
         step: Math.random() * 100
-      });
-    }
-
-    // Fireflies / starlight sparkles
-    const stars = [];
-    for (let i = 0; i < 28; i++) {
-      stars.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        size: 1 + Math.random() * 2,
-        opacity: Math.random(),
-        fadeSpeed: 0.005 + Math.random() * 0.015,
-        fadeDir: 1
       });
     }
 
     function animate() {
       ctx.clearRect(0, 0, width, height);
 
-      // Draw twinkles
-      stars.forEach(s => {
-        s.opacity += s.fadeSpeed * s.fadeDir;
-        if (s.opacity > 1) { s.opacity = 1; s.fadeDir = -1; }
-        if (s.opacity < 0.1) { s.opacity = 0.1; s.fadeDir = 1; }
-
-        ctx.fillStyle = `rgba(255, 235, 180, ${s.opacity * 0.7})`;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      // Draw Petals
       petals.forEach(p => {
         p.step += p.swayFreq;
         p.x += p.vx + Math.sin(p.step) * p.swayAmp;
@@ -610,7 +415,7 @@
 
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.ellipse(0, 0, p.r, p.r * 1.8, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, p.r, p.r * 1.7, 0, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.restore();
@@ -623,43 +428,42 @@
   }
 
   // ==========================================================================
-  // 9. EVENT LISTENERS
+  // 8. EVENT LISTENERS
   // ==========================================================================
   function setupEventListeners() {
-    // Search
     let searchTimeout;
-    searchInput.addEventListener('input', (e) => {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(() => {
-        searchQuery = e.target.value;
-        applyFilters();
-      }, 200);
-    });
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          searchQuery = e.target.value;
+          applyFilters();
+        }, 200);
+      });
+    }
 
-    // Brand Home button scrolls smoothly to top
     if (brandHomeBtn) {
       brandHomeBtn.addEventListener('click', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
     }
 
-    // Lightbox Controls
-    lightboxCloseBtn.addEventListener('click', closeLightbox);
-    lightboxPrevBtn.addEventListener('click', showPrevMemory);
-    lightboxNextBtn.addEventListener('click', showNextMemory);
-    lightboxZoomBtn.addEventListener('click', toggleZoom);
-    lightboxImg.addEventListener('click', toggleZoom);
+    if (lightboxCloseBtn) lightboxCloseBtn.addEventListener('click', closeLightbox);
+    if (lightboxPrevBtn) lightboxPrevBtn.addEventListener('click', showPrevMemory);
+    if (lightboxNextBtn) lightboxNextBtn.addEventListener('click', showNextMemory);
+    if (lightboxZoomBtn) lightboxZoomBtn.addEventListener('click', toggleZoom);
+    if (lightboxImg) lightboxImg.addEventListener('click', toggleZoom);
 
-    // Lightbox Backdrop Click to Close
-    lightboxModal.addEventListener('click', (e) => {
-      if (e.target === lightboxModal) {
-        closeLightbox();
-      }
-    });
+    if (lightboxModal) {
+      lightboxModal.addEventListener('click', (e) => {
+        if (e.target === lightboxModal) {
+          closeLightbox();
+        }
+      });
+    }
 
-    // Keyboard navigation
     window.addEventListener('keydown', (e) => {
-      if (lightboxModal.classList.contains('active')) {
+      if (lightboxModal && lightboxModal.classList.contains('active')) {
         if (e.key === 'Escape') {
           closeLightbox();
         } else if (e.key === 'ArrowLeft') {
@@ -671,38 +475,35 @@
       }
     });
 
-    // Touch Swipe Support for Mobile Lightbox
     let touchStartX = 0;
     let touchStartY = 0;
-    lightboxModal.addEventListener('touchstart', (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-      touchStartY = e.changedTouches[0].screenY;
-    }, { passive: true });
+    if (lightboxModal) {
+      lightboxModal.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+      }, { passive: true });
 
-    lightboxModal.addEventListener('touchend', (e) => {
-      const touchEndX = e.changedTouches[0].screenX;
-      const touchEndY = e.changedTouches[0].screenY;
-      const dx = touchEndX - touchStartX;
-      const dy = touchEndY - touchStartY;
+      lightboxModal.addEventListener('touchend', (e) => {
+        const touchEndX = e.changedTouches[0].screenX;
+        const touchEndY = e.changedTouches[0].screenY;
+        const dx = touchEndX - touchStartX;
+        const dy = touchEndY - touchStartY;
 
-      // Horizontal swipe (dominant over vertical)
-      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {
-        if (dx < 0) {
-          showNextMemory(); // Swipe Left -> Next
-        } else {
-          showPrevMemory(); // Swipe Right -> Prev
+        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {
+          if (dx < 0) {
+            showNextMemory();
+          } else {
+            showPrevMemory();
+          }
         }
-      }
-    }, { passive: true });
+      }, { passive: true });
+    }
 
-    // Buttons
-    replayIntroBtn.addEventListener('click', replayIntro);
-    randomMemoryBtn.addEventListener('click', pickRandomMemory);
-    slideshowBtn.addEventListener('click', toggleSlideshow);
-    musicBtn.addEventListener('click', toggleMusic);
+    if (randomMemoryBtn) {
+      randomMemoryBtn.addEventListener('click', pickRandomMemory);
+    }
   }
 
-  // Start app when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
